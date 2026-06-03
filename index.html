@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>EZ Mart Clock</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #e8ff47;
+    --accent-dim: #b8cc30;
+    --text: #f0f0f0;
+    --muted: #666;
+    --danger: #ff4f4f;
+    --green: #4fff91;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .live-time {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .status-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .status-dot.active {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text {
+    font-size: 14px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .status-text strong {
+    display: block;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .comment-row {
+    margin-bottom: 16px;
+  }
+
+  .comment-row label {
+    display: block;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .quick-comments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .quick-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .quick-btn:hover, .quick-btn.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,255,71,0.06);
+  }
+
+  .comment-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .comment-input:focus {
+    border-color: var(--accent);
+  }
+
+  .comment-input::placeholder {
+    color: var(--muted);
+  }
+
+  .main-btn {
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .btn-clockin {
+    background: var(--accent);
+    color: #0f0f0f;
+  }
+
+  .btn-clockin:hover {
+    background: var(--accent-dim);
+    transform: translateY(-1px);
+  }
+
+  .btn-clockout {
+    background: transparent;
+    color: var(--green);
+    border: 1px solid var(--green);
+  }
+
+  .btn-clockout:hover {
+    background: rgba(79,255,145,0.08);
+    transform: translateY(-1px);
+  }
+
+  .btn-delete {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--danger);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .btn-delete:hover {
+    border-color: var(--danger);
+    background: rgba(255,79,79,0.06);
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+  }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .week-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .nav-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .shift-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .shift-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .shift-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+
+  .shift-day {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .shift-hours {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .shift-times {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  .shift-comment {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .shift-incomplete {
+    border-color: rgba(232,255,71,0.2);
+  }
+
+  .total-bar {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .total-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .total-value {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .copy-btn {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent);
+    color: #0f0f0f;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+    letter-spacing: 0.06em;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">EZ Mart</span>
+  <span class="live-time" id="liveTime"></span>
+</header>
+
+<div class="status-card">
+  <div class="status-dot" id="statusDot"></div>
+  <div class="status-text">
+    <strong id="statusLabel">Not clocked in</strong>
+    <span id="statusSub">tap below to start your shift</span>
+  </div>
+</div>
+
+<div class="comment-row">
+  <label>Shift note (optional)</label>
+  <div class="quick-comments">
+    <button class="quick-btn" onclick="selectQuick(this, 'Delivery done')">Delivery done</button>
+    <button class="quick-btn" onclick="selectQuick(this, 'Cover done')">Cover done</button>
+    <button class="quick-btn" onclick="selectQuick(this, 'Public holiday')">Public holiday</button>
+    <button class="quick-btn" onclick="selectQuick(this, 'Short shift')">Short shift</button>
+  </div>
+  <input class="comment-input" id="commentInput" type="text" placeholder="or type a custom note..." />
+</div>
+
+<button class="main-btn btn-clockin" id="mainBtn" onclick="handleMainBtn()">Clock In</button>
+<button class="btn-delete" onclick="deleteLastEntry()">&#x2715; Delete last entry</button>
+
+<hr class="divider">
+
+<div class="week-nav">
+  <button class="nav-btn" onclick="changeWeek(-1)">&#8249;</button>
+  <span class="week-label" id="weekLabel"></span>
+  <button class="nav-btn" onclick="changeWeek(1)">&#8250;</button>
+</div>
+
+<div class="shift-list" id="shiftList"></div>
+
+<div class="total-bar">
+  <span class="total-label">Total this week</span>
+  <span class="total-value" id="totalHours">0 hrs</span>
+</div>
+
+<button class="copy-btn" onclick="copyReport()">&#x2398; Copy report to clipboard</button>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ---- CONFIG ----
+  // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE after setup:
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHjgeVNCpONXfshT487Hns506L7tbrTA9GT7ud6axqvwpvibNMmRm4-K4oSfEkvkKJ/exec';
+
+  // QLD timezone
+  const TZ = 'Australia/Brisbane';
+
+  let isClockedIn = false;
+  let currentClockInId = null;
+  let weekOffset = 0; // 0 = current week
+
+  // ---- TIME HELPERS ----
+  function nowQLD() {
+    return new Date(new Date().toLocaleString('en-AU', { timeZone: TZ }));
+  }
+
+  function formatDate(d) {
+    return d.toLocaleDateString('en-AU', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', timeZone: TZ });
+  }
+
+  function formatTime(d) {
+    return d.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: TZ });
+  }
+
+  function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate() + diff);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  function getSunday(monday) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23,59,59,999);
+    return d;
+  }
+
+  function diffHours(start, end) {
+    return ((end - start) / 3600000).toFixed(2);
+  }
+
+  // ---- LIVE CLOCK ----
+  function updateClock() {
+    const now = nowQLD();
+    document.getElementById('liveTime').textContent = formatTime(now);
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ---- LOCAL STORAGE ----
+  function getEntries() {
+    return JSON.parse(localStorage.getItem('ezmart_entries') || '[]');
+  }
+
+  function saveEntries(entries) {
+    localStorage.setItem('ezmart_entries', JSON.stringify(entries));
+  }
+
+  // ---- QUICK COMMENT BUTTONS ----
+  function selectQuick(btn, text) {
+    document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+    const input = document.getElementById('commentInput');
+    if (input.value === text) {
+      input.value = '';
+    } else {
+      btn.classList.add('selected');
+      input.value = text;
+    }
+  }
+
+  // ---- STATUS UI ----
+  function updateStatusUI() {
+    const dot = document.getElementById('statusDot');
+    const label = document.getElementById('statusLabel');
+    const sub = document.getElementById('statusSub');
+    const btn = document.getElementById('mainBtn');
+
+    if (isClockedIn) {
+      dot.classList.add('active');
+      label.textContent = 'Clocked in';
+      sub.textContent = 'shift in progress';
+      btn.textContent = 'Clock Out';
+      btn.className = 'main-btn btn-clockout';
+    } else {
+      dot.classList.remove('active');
+      label.textContent = 'Not clocked in';
+      sub.textContent = 'tap below to start your shift';
+      btn.textContent = 'Clock In';
+      btn.className = 'main-btn btn-clockin';
+    }
+  }
+
+  // ---- CLOCK IN / OUT ----
+  function handleMainBtn() {
+    const comment = document.getElementById('commentInput').value.trim();
+    const entries = getEntries();
+    const now = nowQLD();
+
+    if (!isClockedIn) {
+      // Clock in
+      const entry = {
+        id: Date.now().toString(),
+        clockIn: now.toISOString(),
+        clockOut: null,
+        comment: comment
+      };
+      entries.push(entry);
+      saveEntries(entries);
+      currentClockInId = entry.id;
+      isClockedIn = true;
+      sendToSheet('CLOCK_IN', entry);
+      showToast('Clocked in at ' + formatTime(now));
+    } else {
+      // Clock out
+      const idx = entries.findIndex(e => e.id === currentClockInId);
+      if (idx !== -1) {
+        entries[idx].clockOut = now.toISOString();
+        if (comment) entries[idx].comment = comment;
+        saveEntries(entries);
+        sendToSheet('CLOCK_OUT', entries[idx]);
+      }
+      isClockedIn = false;
+      currentClockInId = null;
+      showToast('Clocked out at ' + formatTime(now));
+    }
+
+    document.getElementById('commentInput').value = '';
+    document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('selected'));
+    updateStatusUI();
+    renderWeek();
+  }
+
+  // ---- DELETE LAST ENTRY ----
+  function deleteLastEntry() {
+    const entries = getEntries();
+    if (entries.length === 0) { showToast('Nothing to delete'); return; }
+    if (!confirm('Delete last entry?')) return;
+    const removed = entries.pop();
+    saveEntries(entries);
+    if (removed.id === currentClockInId) {
+      isClockedIn = false;
+      currentClockInId = null;
+    }
+    updateStatusUI();
+    renderWeek();
+    showToast('Last entry deleted');
+  }
+
+  // ---- WEEK RENDER ----
+  function getWeekBounds() {
+    const now = nowQLD();
+    const monday = getMonday(now);
+    monday.setDate(monday.getDate() + weekOffset * 7);
+    const sunday = getSunday(monday);
+    return { monday, sunday };
+  }
+
+  function renderWeek() {
+    const { monday, sunday } = getWeekBounds();
+    const entries = getEntries();
+
+    const label = monday.toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })
+      + ' – ' + sunday.toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+    document.getElementById('weekLabel').textContent = label;
+
+    const weekEntries = entries.filter(e => {
+      const d = new Date(e.clockIn);
+      return d >= monday && d <= sunday;
+    });
+
+    const list = document.getElementById('shiftList');
+    list.innerHTML = '';
+
+    if (weekEntries.length === 0) {
+      list.innerHTML = '<div class="empty-state">No shifts this week</div>';
+      document.getElementById('totalHours').textContent = '0 hrs';
+      return;
+    }
+
+    let totalMins = 0;
+
+    weekEntries.forEach(e => {
+      const inDate = new Date(e.clockIn);
+      const outDate = e.clockOut ? new Date(e.clockOut) : null;
+      let hrs = null;
+      if (outDate) {
+        const diff = (outDate - inDate) / 60000;
+        totalMins += diff;
+        hrs = (diff / 60).toFixed(2);
+      }
+
+      const item = document.createElement('div');
+      item.className = 'shift-item' + (outDate ? '' : ' shift-incomplete');
+
+      item.innerHTML = `
+        <div class="shift-row">
+          <span class="shift-day">${formatDate(inDate)}</span>
+          <span class="shift-hours">${hrs ? hrs + ' hrs' : 'in progress'}</span>
+        </div>
+        <div class="shift-times">
+          In: ${formatTime(inDate)} &nbsp;|&nbsp; Out: ${outDate ? formatTime(outDate) : '—'}
+        </div>
+        ${e.comment ? `<div class="shift-comment">${e.comment}</div>` : ''}
+      `;
+      list.appendChild(item);
+    });
+
+    const totalHrs = (totalMins / 60).toFixed(2);
+    document.getElementById('totalHours').textContent = totalHrs + ' hrs';
+  }
+
+  function changeWeek(dir) {
+    weekOffset += dir;
+    if (weekOffset > 0) weekOffset = 0;
+    renderWeek();
+  }
+
+  // ---- COPY REPORT ----
+  function copyReport() {
+    const { monday, sunday } = getWeekBounds();
+    const entries = getEntries();
+
+    const weekEntries = entries.filter(e => {
+      const d = new Date(e.clockIn);
+      return d >= monday && d <= sunday;
+    });
+
+    const weekLabel = monday.toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })
+      + ' to ' + sunday.toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    let report = `EZ MART – WEEKLY REPORT\n`;
+    report += `${weekLabel}\n`;
+    report += `${'─'.repeat(44)}\n`;
+
+    let totalMins = 0;
+
+    if (weekEntries.length === 0) {
+      report += `No shifts recorded.\n`;
+    } else {
+      weekEntries.forEach(e => {
+        const inDate = new Date(e.clockIn);
+        const outDate = e.clockOut ? new Date(e.clockOut) : null;
+        let hrs = '—';
+        if (outDate) {
+          const diff = (outDate - inDate) / 60000;
+          totalMins += diff;
+          hrs = (diff / 60).toFixed(2) + ' hrs';
+        }
+        report += `${formatDate(inDate)}\n`;
+        report += `  In: ${formatTime(inDate)}  |  Out: ${outDate ? formatTime(outDate) : '—'}  |  ${hrs}\n`;
+        if (e.comment) report += `  Note: ${e.comment}\n`;
+        report += '\n';
+      });
+    }
+
+    report += `${'─'.repeat(44)}\n`;
+    report += `TOTAL THIS WEEK: ${(totalMins / 60).toFixed(2)} hrs\n`;
+
+    navigator.clipboard.writeText(report).then(() => {
+      showToast('Report copied to clipboard');
+    }).catch(() => {
+      showToast('Copy failed – try again');
+    });
+  }
+
+  // ---- GOOGLE SHEETS SYNC ----
+  async function sendToSheet(action, entry) {
+    if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, entry })
+      });
+    } catch (e) {
+      console.warn('Sheet sync failed:', e);
+    }
+  }
+
+  // ---- TOAST ----
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ---- RESTORE STATE ----
+  function restoreState() {
+    const entries = getEntries();
+    const last = entries[entries.length - 1];
+    if (last && !last.clockOut) {
+      isClockedIn = true;
+      currentClockInId = last.id;
+    }
+    updateStatusUI();
+    renderWeek();
+  }
+
+  restoreState();
+</script>
+</body>
+</html>
