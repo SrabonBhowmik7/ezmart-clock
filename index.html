@@ -100,11 +100,11 @@
     margin-bottom: 2px;
   }
 
-  .comment-row {
+  .field-row {
     margin-bottom: 16px;
   }
 
-  .comment-row label {
+  .field-row label {
     display: block;
     font-size: 11px;
     font-family: var(--mono);
@@ -113,6 +113,58 @@
     letter-spacing: 0.1em;
     margin-bottom: 8px;
   }
+
+  .store-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .store-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 10px 10px;
+    font-size: 12px;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+    line-height: 1.3;
+  }
+
+  .store-btn:hover, .store-btn.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,255,71,0.06);
+  }
+
+  .other-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    display: none;
+    margin-top: 8px;
+  }
+
+  .other-input.visible {
+    display: block;
+  }
+
+  .other-input:focus {
+    border-color: var(--accent);
+  }
+
+  .other-input::placeholder { color: var(--muted); }
 
   .quick-comments {
     display: flex;
@@ -152,13 +204,8 @@
     transition: border-color 0.2s;
   }
 
-  .comment-input:focus {
-    border-color: var(--accent);
-  }
-
-  .comment-input::placeholder {
-    color: var(--muted);
-  }
+  .comment-input:focus { border-color: var(--accent); }
+  .comment-input::placeholder { color: var(--muted); }
 
   .main-btn {
     width: 100%;
@@ -215,15 +262,6 @@
   .btn-delete:hover {
     border-color: var(--danger);
     background: rgba(255,79,79,0.06);
-  }
-
-  .section-title {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 12px;
   }
 
   .week-nav {
@@ -293,6 +331,13 @@
     font-weight: 500;
   }
 
+  .shift-store {
+    font-size: 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    margin-bottom: 2px;
+  }
+
   .shift-times {
     font-size: 12px;
     color: var(--muted);
@@ -318,7 +363,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
 
   .total-label {
@@ -334,6 +379,34 @@
     font-size: 18px;
     color: var(--accent);
     font-weight: 500;
+  }
+
+  .store-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .store-summary-item {
+    display: flex;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+  }
+
+  .store-summary-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .store-summary-hrs {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
   }
 
   .copy-btn {
@@ -375,9 +448,7 @@
     letter-spacing: 0.06em;
   }
 
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
 
   .empty-state {
     text-align: center;
@@ -391,6 +462,15 @@
     border: none;
     border-top: 1px solid var(--border);
     margin: 24px 0;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
   }
 </style>
 </head>
@@ -409,7 +489,20 @@
   </div>
 </div>
 
-<div class="comment-row">
+<div class="field-row">
+  <label>Select store</label>
+  <div class="store-grid">
+    <button class="store-btn" onclick="selectStore(this, 'Store 80 Coolangatta')">Store 80<br>Coolangatta</button>
+    <button class="store-btn" onclick="selectStore(this, 'Store 120 Coolangatta')">Store 120<br>Coolangatta</button>
+    <button class="store-btn" onclick="selectStore(this, 'Sandbar Burleigh Grocer')">Sandbar<br>Burleigh Grocer</button>
+    <button class="store-btn" onclick="selectStore(this, 'Store 11 Conor')">Store 11<br>Conor</button>
+    <button class="store-btn" onclick="selectStore(this, 'Cavil 2')">Cavil 2</button>
+    <button class="store-btn" id="otherStoreBtn" onclick="selectStore(this, 'other')">Other...</button>
+  </div>
+  <input class="other-input" id="otherStoreInput" type="text" placeholder="Type store name..." oninput="updateOtherStore()" />
+</div>
+
+<div class="field-row">
   <label>Shift note (optional)</label>
   <div class="quick-comments">
     <button class="quick-btn" onclick="selectQuick(this, 'Delivery done')">Delivery done</button>
@@ -438,21 +531,21 @@
   <span class="total-value" id="totalHours">0 hrs</span>
 </div>
 
+<div class="section-title">Hours by store</div>
+<div class="store-summary" id="storeSummary"></div>
+
 <button class="copy-btn" onclick="copyReport()">&#x2398; Copy report to clipboard</button>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  // ---- CONFIG ----
-  // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE after setup:
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHjgeVNCpONXfshT487Hns506L7tbrTA9GT7ud6axqvwpvibNMmRm4-K4oSfEkvkKJ/exec';
-
-  // QLD timezone
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoaD4R_rzVt3XdI-eutmY6qvhky30WfIdfoRGOgbOf_6_Dhus6hlQoX37Prn6wnA-C/exec';
   const TZ = 'Australia/Brisbane';
 
   let isClockedIn = false;
   let currentClockInId = null;
-  let weekOffset = 0; // 0 = current week
+  let weekOffset = 0;
+  let selectedStore = '';
 
   // ---- TIME HELPERS ----
   function nowQLD() {
@@ -483,10 +576,6 @@
     return d;
   }
 
-  function diffHours(start, end) {
-    return ((end - start) / 3600000).toFixed(2);
-  }
-
   // ---- LIVE CLOCK ----
   function updateClock() {
     const now = nowQLD();
@@ -502,6 +591,25 @@
 
   function saveEntries(entries) {
     localStorage.setItem('ezmart_entries', JSON.stringify(entries));
+  }
+
+  // ---- STORE SELECTION ----
+  function selectStore(btn, value) {
+    document.querySelectorAll('.store-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const otherInput = document.getElementById('otherStoreInput');
+    if (value === 'other') {
+      otherInput.classList.add('visible');
+      otherInput.focus();
+      selectedStore = otherInput.value.trim();
+    } else {
+      otherInput.classList.remove('visible');
+      selectedStore = value;
+    }
+  }
+
+  function updateOtherStore() {
+    selectedStore = document.getElementById('otherStoreInput').value.trim();
   }
 
   // ---- QUICK COMMENT BUTTONS ----
@@ -526,7 +634,7 @@
     if (isClockedIn) {
       dot.classList.add('active');
       label.textContent = 'Clocked in';
-      sub.textContent = 'shift in progress';
+      sub.textContent = selectedStore ? selectedStore : 'shift in progress';
       btn.textContent = 'Clock Out';
       btn.className = 'main-btn btn-clockout';
     } else {
@@ -540,14 +648,19 @@
 
   // ---- CLOCK IN / OUT ----
   function handleMainBtn() {
+    if (!isClockedIn && !selectedStore) {
+      showToast('Please select a store first');
+      return;
+    }
+
     const comment = document.getElementById('commentInput').value.trim();
     const entries = getEntries();
     const now = nowQLD();
 
     if (!isClockedIn) {
-      // Clock in
       const entry = {
         id: Date.now().toString(),
+        store: selectedStore,
         clockIn: now.toISOString(),
         clockOut: null,
         comment: comment
@@ -559,7 +672,6 @@
       sendToSheet('CLOCK_IN', entry);
       showToast('Clocked in at ' + formatTime(now));
     } else {
-      // Clock out
       const idx = entries.findIndex(e => e.id === currentClockInId);
       if (idx !== -1) {
         entries[idx].clockOut = now.toISOString();
@@ -569,6 +681,10 @@
       }
       isClockedIn = false;
       currentClockInId = null;
+      selectedStore = '';
+      document.querySelectorAll('.store-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('otherStoreInput').classList.remove('visible');
+      document.getElementById('otherStoreInput').value = '';
       showToast('Clocked out at ' + formatTime(now));
     }
 
@@ -588,6 +704,9 @@
     if (removed.id === currentClockInId) {
       isClockedIn = false;
       currentClockInId = null;
+      selectedStore = '';
+      document.querySelectorAll('.store-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('otherStoreInput').classList.remove('visible');
     }
     updateStatusUI();
     renderWeek();
@@ -622,39 +741,51 @@
     if (weekEntries.length === 0) {
       list.innerHTML = '<div class="empty-state">No shifts this week</div>';
       document.getElementById('totalHours').textContent = '0 hrs';
+      document.getElementById('storeSummary').innerHTML = '';
       return;
     }
 
     let totalMins = 0;
+    const storeMap = {};
 
     weekEntries.forEach(e => {
       const inDate = new Date(e.clockIn);
       const outDate = e.clockOut ? new Date(e.clockOut) : null;
       let hrs = null;
+      let diffMins = 0;
       if (outDate) {
-        const diff = (outDate - inDate) / 60000;
-        totalMins += diff;
-        hrs = (diff / 60).toFixed(2);
+        diffMins = (outDate - inDate) / 60000;
+        totalMins += diffMins;
+        hrs = (diffMins / 60).toFixed(2);
+        const sname = e.store || 'Unknown';
+        storeMap[sname] = (storeMap[sname] || 0) + diffMins;
       }
 
       const item = document.createElement('div');
       item.className = 'shift-item' + (outDate ? '' : ' shift-incomplete');
-
       item.innerHTML = `
         <div class="shift-row">
           <span class="shift-day">${formatDate(inDate)}</span>
           <span class="shift-hours">${hrs ? hrs + ' hrs' : 'in progress'}</span>
         </div>
-        <div class="shift-times">
-          In: ${formatTime(inDate)} &nbsp;|&nbsp; Out: ${outDate ? formatTime(outDate) : '—'}
-        </div>
+        ${e.store ? `<div class="shift-store">${e.store}</div>` : ''}
+        <div class="shift-times">In: ${formatTime(inDate)} &nbsp;|&nbsp; Out: ${outDate ? formatTime(outDate) : '—'}</div>
         ${e.comment ? `<div class="shift-comment">${e.comment}</div>` : ''}
       `;
       list.appendChild(item);
     });
 
-    const totalHrs = (totalMins / 60).toFixed(2);
-    document.getElementById('totalHours').textContent = totalHrs + ' hrs';
+    document.getElementById('totalHours').textContent = (totalMins / 60).toFixed(2) + ' hrs';
+
+    // Store summary
+    const summary = document.getElementById('storeSummary');
+    summary.innerHTML = '';
+    Object.entries(storeMap).sort((a,b) => b[1]-a[1]).forEach(([name, mins]) => {
+      const div = document.createElement('div');
+      div.className = 'store-summary-item';
+      div.innerHTML = `<span class="store-summary-name">${name}</span><span class="store-summary-hrs">${(mins/60).toFixed(2)} hrs</span>`;
+      summary.appendChild(div);
+    });
   }
 
   function changeWeek(dir) {
@@ -676,11 +807,12 @@
     const weekLabel = monday.toLocaleDateString('en-AU', { day: '2-digit', month: 'short' })
       + ' to ' + sunday.toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' });
 
-    let report = `EZ MART – WEEKLY REPORT\n`;
+    let report = `EZ MART - WEEKLY REPORT\n`;
     report += `${weekLabel}\n`;
-    report += `${'─'.repeat(44)}\n`;
+    report += `${'─'.repeat(44)}\n\n`;
 
     let totalMins = 0;
+    const storeMap = {};
 
     if (weekEntries.length === 0) {
       report += `No shifts recorded.\n`;
@@ -693,27 +825,35 @@
           const diff = (outDate - inDate) / 60000;
           totalMins += diff;
           hrs = (diff / 60).toFixed(2) + ' hrs';
+          const sname = e.store || 'Unknown';
+          storeMap[sname] = (storeMap[sname] || 0) + diff;
         }
-        report += `${formatDate(inDate)}\n`;
-        report += `  In: ${formatTime(inDate)}  |  Out: ${outDate ? formatTime(outDate) : '—'}  |  ${hrs}\n`;
+        report += `${formatDate(inDate)}`;
+        if (e.store) report += ` | ${e.store}`;
+        report += `\n`;
+        report += `  In: ${formatTime(inDate)}  Out: ${outDate ? formatTime(outDate) : '—'}  ${hrs}\n`;
         if (e.comment) report += `  Note: ${e.comment}\n`;
         report += '\n';
       });
     }
 
     report += `${'─'.repeat(44)}\n`;
+    report += `HOURS BY STORE\n`;
+    Object.entries(storeMap).sort((a,b) => b[1]-a[1]).forEach(([name, mins]) => {
+      report += `  ${name.padEnd(28)} ${(mins/60).toFixed(2)} hrs\n`;
+    });
+    report += `${'─'.repeat(44)}\n`;
     report += `TOTAL THIS WEEK: ${(totalMins / 60).toFixed(2)} hrs\n`;
 
     navigator.clipboard.writeText(report).then(() => {
       showToast('Report copied to clipboard');
     }).catch(() => {
-      showToast('Copy failed – try again');
+      showToast('Copy failed, try again');
     });
   }
 
   // ---- GOOGLE SHEETS SYNC ----
   async function sendToSheet(action, entry) {
-    if (APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') return;
     try {
       await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
@@ -741,6 +881,7 @@
     if (last && !last.clockOut) {
       isClockedIn = true;
       currentClockInId = last.id;
+      selectedStore = last.store || '';
     }
     updateStatusUI();
     renderWeek();
